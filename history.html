@@ -5,9 +5,9 @@
   <title>📜 السجل</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body class="bg-light">
+<body>
 
-<!-- شريط التنقل -->
+<!-- ✅ Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <div class="container-fluid">
     <a class="navbar-brand" href="index.html">📦 المنتجات</a>
@@ -19,45 +19,38 @@
   </div>
 </nav>
 
-<!-- جدول السجل -->
 <div class="container mt-4">
-  <h2 class="text-center mb-4">📜 سجل العمليات</h2>
+  <h3 class="text-center">📜 سجل العمليات</h3>
   <table class="table table-bordered text-center">
-    <thead class="table-dark">
+    <thead>
       <tr>
-        <th>📅 التاريخ</th>
-        <th>⚡ العملية</th>
-        <th>📝 التفاصيل</th>
+        <th>التاريخ</th>
+        <th>العملية</th>
+        <th>التفاصيل</th>
       </tr>
     </thead>
     <tbody id="historyTable"></tbody>
   </table>
 </div>
 
-<!-- جافاسكربت -->
 <script>
-const API = "https://script.google.com/macros/s/AKfycbx3rQd6R70Q1WHv2ynDoBSSHCSo4N7WvnTCSM5iTf0q3lzCl-ewPIOfsHNCKrPLCvHA/exec";
+const API = "https://script.google.com/macros/s/AKfycbx3rQd6R70Q1Wh2ynDoBSSHCSo4N7WvnTCSM5iTf0q3IzCl-ewPlOfSHNCKrPLCvHA/exec";
 
-// جلب البيانات من Google Sheets عبر Google Apps Script
-fetch(API+"?action=getHistory")
-  .then(response => response.json())
-  .then(rows => {
-    let t = "";
-    rows.forEach(h => {
-      t += `
-        <tr>
-          <td>${h.date}</td>
-          <td>${h.type}</td>
-          <td>${h.details}</td>
-        </tr>`;
-    });
-    document.getElementById("historyTable").innerHTML = t;
-  })
-  .catch(err => {
-    console.error("خطأ في جلب البيانات:", err);
-    document.getElementById("historyTable").innerHTML = 
-      "<tr><td colspan='3'>⚠️ فشل تحميل السجل</td></tr>";
+// ✅ تحميل السجل
+async function loadHistory(){
+  const res = await fetch(API+"?action=getHistory");
+  const rows = await res.json();
+  let html="";
+  rows.forEach(h=>{
+    html += `<tr>
+      <td>${h.date}</td>
+      <td>${h.type}</td>
+      <td>${h.details}</td>
+    </tr>`;
   });
+  document.getElementById("historyTable").innerHTML = html;
+}
+loadHistory();
 </script>
 
 </body>
