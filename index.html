@@ -4,15 +4,14 @@
   <meta charset="UTF-8">
   <title>📦 المنتجات</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/@zxing/library@latest"></script>
 </head>
 <body>
-
-<!-- ✅ Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <div class="container-fluid">
-    <a class="navbar-brand" href="index.html">📦 المنتجات</a>
+    <a class="navbar-brand" href="sales.html">🛒 البيع</a>
     <div>
-      <a class="btn btn-outline-light" href="sales.html">🛒 البيع</a>
+      <a class="btn btn-outline-light" href="index.html">📦 المنتجات</a>
       <a class="btn btn-outline-light" href="profit.html">💰 الربح</a>
       <a class="btn btn-outline-light" href="history.html">📜 السجل</a>
     </div>
@@ -21,70 +20,65 @@
 
 <div class="container mt-4">
   <h3 class="text-center">إضافة منتج جديد</h3>
-  
+  <video id="preview" style="width:100%; max-height:180px; border:1px solid #ccc; border-radius:10px;"></video>
+  <audio id="beep" src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"></audio>
+
   <form id="productForm" class="mt-3">
     <input type="text" id="barcode" class="form-control mb-2" placeholder="الباركود" required>
     <input type="text" id="name" class="form-control mb-2" placeholder="اسم المنتج" required>
-    <input type="number" id="price" class="form-control mb-2" placeholder="السعر" required>
+    <input type="number" id="price" class="form-control mb-2" placeholder="سعر التكلفة" required>
     <input type="number" id="qty" class="form-control mb-2" placeholder="الكمية" required>
     <button type="submit" class="btn btn-success w-100">💾 حفظ</button>
   </form>
 
-  <h4 class="mt-4">قائمة المنتجات</h4>
+  <h4 class="mt-4">📋 قائمة المنتجات</h4>
   <table class="table table-bordered text-center">
-    <thead>
-      <tr>
-        <th>الباركود</th>
-        <th>الاسم</th>
-        <th>السعر</th>
-        <th>الكمية</th>
-      </tr>
-    </thead>
+    <thead><tr><th>الباركود</th><th>الاسم</th><th>السعر</th><th>الكمية</th></tr></thead>
     <tbody id="productsTable"></tbody>
   </table>
-  <h5 class="mt-3">إجمالي قيمة المنتجات: <span id="totalValue">0</span> $</h5>
+  <h5>💲 إجمالي قيمة المنتجات: <span id="totalValue">0</span> $</h5>
 </div>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbx3rQd6R70Q1Wh2ynDoBSSHCSo4N7WvnTCSM5iTf0q3IzCl-ewPlOfSHNCKrPLCvHA/exec";
+const API="https://script.google.com/macros/s/AKfycbx3rQd6R70Q1Wh2ynDoBSSHCSo4N7WvnTCSM5iTf0q3IzCl-ewPlOfSHNCKrPLCvHA/exec";
+const beep=document.getElementById("beep");
 
-// ✅ حفظ منتج جديد
-document.getElementById("productForm").addEventListener("submit", async e=>{
+const codeReader=new ZXing.BrowserMultiFormatReader();
+codeReader.decodeFromVideoDevice(null,document.getElementById('preview'),(result,err)=>{
+  if(result){
+    beep.play();
+    document.getElementById('barcode').value=result.text;
+  }
+});
+
+document.getElementById("productForm").addEventListener("submit",async e=>{
   e.preventDefault();
-  const data = {
+  const data={
     type:"product",
-    barcode: document.getElementById("barcode").value,
-    name: document.getElementById("name").value,
-    price: parseFloat(document.getElementById("price").value),
-    qty: parseInt(document.getElementById("qty").value),
-    date: new Date().toLocaleString()
+    barcode:document.getElementById("barcode").value,
+    name:document.getElementById("name").value,
+    price:parseFloat(document.getElementById("price").value),
+    qty:parseInt(document.getElementById("qty").value),
+    date:new Date().toLocaleString()
   };
   await fetch(API,{method:"POST",body:JSON.stringify(data)});
-  alert("✅ تم حفظ المنتج");
+  alert("✔ تم حفظ المنتج");
   loadProducts();
   e.target.reset();
 });
 
-// ✅ تحميل المنتجات
 async function loadProducts(){
-  const res = await fetch(API+"?action=getProducts");
-  const rows = await res.json();
-  let html="";
-  let total=0;
+  const res=await fetch(API+"?action=getProducts");
+  const rows=await res.json();
+  let html="",total=0;
   rows.forEach(p=>{
-    html += `<tr>
-      <td>${p.barcode}</td>
-      <td>${p.name}</td>
-      <td>${p.price}</td>
-      <td>${p.qty}</td>
-    </tr>`;
-    total += p.price * p.qty;
+    html+=`<tr><td>${p.barcode}</td><td>${p.name}</td><td>${p.price}</td><td>${p.qty}</td></tr>`;
+    total+=p.price*p.qty;
   });
   document.getElementById("productsTable").innerHTML=html;
   document.getElementById("totalValue").innerText=total;
 }
 loadProducts();
 </script>
-
 </body>
 </html>
